@@ -6,14 +6,17 @@
 #include <mrgss/mrgss.h>
 #include <mrgss/mrgss_keyboard.h>
 
+/* Maximun amount of keys in the  */
+#define MAX_KEYS 512
+
 /**
  *  buffers
  */
-static char press[512];
-static char trigger[512];
-static char release[512];
-static char repeat[512];
-static mrb_int time[512];
+static char press[MAX_KEYS];
+static char trigger[MAX_KEYS];
+static char release[MAX_KEYS];
+static char repeat[MAX_KEYS];
+static mrb_int time[MAX_KEYS];
 
 /*
  * Update
@@ -21,8 +24,9 @@ static mrb_int time[512];
 static mrb_value
 input_update(mrb_state *mrb, mrb_int capa) {
     const Uint8* currentKeyStates;
-    currentKeyStates = SDL_GetKeyboardState(NULL);
-    for (int i = 0; i < 512; ++i) {
+    int max_states = MAX_KEYS; /* used to prevent overflows */
+    currentKeyStates = SDL_GetKeyboardState(&max_states);
+    for (int i = 0; i < MAX_KEYS && i < max_states; ++i) {
         trigger[i] = !press[i] && currentKeyStates[i];
         release[i] = press[i] && !currentKeyStates[i];
         press[i] = currentKeyStates[i];
@@ -40,6 +44,9 @@ input_trigger (mrb_state *mrb, mrb_int capa)
 {
   mrb_int key;
   mrb_get_args (mrb, "i", &key);
+  if (key < 0 || key >= MAX_KEYS) {
+    return mrb_nil_value();
+  }
   return trigger[key] == TRUE ? mrb_true_value () : mrb_false_value ();
 
 }
@@ -52,6 +59,9 @@ input_press (mrb_state *mrb, mrb_int capa)
 {
   mrb_int key;
   mrb_get_args (mrb, "i", &key);
+  if (key < 0 || key >= MAX_KEYS) {
+    return mrb_nil_value();
+  }
   return press[key] == TRUE ? mrb_true_value () : mrb_false_value ();
 }
 
@@ -63,6 +73,9 @@ input_release (mrb_state *mrb, mrb_int capa)
 {
   mrb_int key;
   mrb_get_args (mrb, "i", &key);
+  if (key < 0 || key >= MAX_KEYS) {
+    return mrb_nil_value();
+  }
   return release[key] == TRUE ? mrb_true_value () : mrb_false_value ();
 }
 
@@ -74,6 +87,9 @@ input_repeat (mrb_state *mrb, mrb_int capa)
 {
   mrb_int key;
   mrb_get_args (mrb, "i", &key);
+  if (key < 0 || key >= MAX_KEYS) {
+    return mrb_nil_value();
+  } 
   return repeat[key] == TRUE ? mrb_true_value () : mrb_false_value ();
 }
 
@@ -85,6 +101,9 @@ input_time (mrb_state *mrb, mrb_int capa)
 {
   mrb_int key;
   mrb_get_args (mrb, "i", &key);
+  if (key < 0 || key >= MAX_KEYS) {
+    return mrb_nil_value();
+  }
   return mrb_fixnum_value (time[key]);
 }
 
