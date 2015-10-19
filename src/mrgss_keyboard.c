@@ -23,10 +23,11 @@ static mrb_int time[MAX_KEYS];
  */
 static mrb_value
 input_update(mrb_state *mrb, mrb_int capa) {
+    int i = 0;
     const Uint8* currentKeyStates;
     int max_states = MAX_KEYS; /* used to prevent overflows */
     currentKeyStates = SDL_GetKeyboardState(&max_states);
-    for (int i = 0; i < MAX_KEYS && i < max_states; ++i) {
+    for (i; i < MAX_KEYS && i < max_states; ++i) {
         trigger[i] = !press[i] && currentKeyStates[i];
         release[i] = press[i] && !currentKeyStates[i];
         press[i] = currentKeyStates[i];
